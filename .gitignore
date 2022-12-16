@@ -37,3 +37,9 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+data/landcover/
+
+data/grid/
+
+data.zip

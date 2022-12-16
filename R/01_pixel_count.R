@@ -46,7 +46,7 @@ NCC_1KM_IDX_LAMBERT_TREED <-  NCC_1KM_IDX_LAMBERT %>%
 FOREST_1KM <- fasterize(
   NCC_1KM_IDX_LAMBERT_TREED, NCC_1KM_GRID, field = "TREE_PCT") 
 writeRaster(FOREST_1KM, 
-  file.path("data", "output", "FORST_1KM.tif"), overwrite = TRUE)
+  file.path("data", "output", "VLCE2_2019_FORST_1KM_NEEDSQC.tif"), overwrite = TRUE)
 
 ## End timer
 end_time <- Sys.time()
