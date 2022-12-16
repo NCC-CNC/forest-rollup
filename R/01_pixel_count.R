@@ -35,7 +35,7 @@ NCC_1KM_IDX_LAMBERT$TREE_COUNT <- exact_extract(TREED_30m, NCC_1KM_IDX_LAMBERT,
  fun = "sum")
 
 # Convert 30m tree pixel sum to proportion
-NCC_1KM_IDX_LAMBERT_TREED <-  NCC_1KM_IDX_LAMBERT %>%
+NCC_1KM_IDX_ALBERS_TREED <-  NCC_1KM_IDX_LAMBERT %>%
   filter(TREE_COUNT > 0) %>%
   mutate(TREE_m2 = TREE_COUNT * 900) %>%
   mutate(TREE_PCT = as.numeric(round(((TREE_m2 / AREA_m2) * 100),1))) %>%
@@ -44,7 +44,7 @@ NCC_1KM_IDX_LAMBERT_TREED <-  NCC_1KM_IDX_LAMBERT %>%
 
 # Polygon to Raster
 FOREST_1KM <- fasterize(
-  NCC_1KM_IDX_LAMBERT_TREED, NCC_1KM_GRID, field = "TREE_PCT") 
+  NCC_1KM_IDX_ALBERS_TREED, NCC_1KM_GRID, field = "TREE_PCT") 
 writeRaster(FOREST_1KM, 
   file.path("data", "output", "VLCE2_2019_FORST_1KM_NEEDSQC.tif"), overwrite = TRUE)
 
