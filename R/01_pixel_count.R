@@ -40,7 +40,7 @@ NCC_1KM_IDX_ALBERS_TREED <-  NCC_1KM_IDX_LAMBERT %>%
   mutate(TREE_m2 = TREE_COUNT * 900) %>%
   mutate(TREE_PCT = as.numeric(round(((TREE_m2 / AREA_m2) * 100),1))) %>%
   mutate(TREE_PCT = if_else(TREE_PCT > 100, 100, TREE_PCT)) %>%
-  st_transform(crs = st_crs(NCC_1KM_IDX))
+  st_transform(crs = st_crs(NCC_1KM_IDX)) # back to Canada_Albers_WGS_1984
 
 # Polygon to Raster
 FOREST_1KM <- fasterize(
