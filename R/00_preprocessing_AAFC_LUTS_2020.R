@@ -13,16 +13,14 @@ VLCE2_2019 <- raster("C:/Data/National/Landcover/NFIS/CA_forest_VLCE2_2019/CA_fo
 LUTS_TIFS <- list.files(file.path(AAFC_LUTS_2020_FOLDER, BACKFILL_TILES), 
   pattern='.tif$', full.names = TRUE, recursive = TRUE)
 
-# GDAL WARP Params
-### get spatial properties of ncc grid
+## get spatial properties for gdal warp
 proj4_string <- sp::proj4string(VLCE2_2019) # projection string
 bbox <- raster::bbox(VLCE2_2019) # bounding box
 te <- c(bbox[1,1], bbox[2,1], bbox[1,2], bbox[2,2]) # xmin, ymin, xmax, ymax
 ts <- c(raster::ncol(VLCE2_2019), raster::nrow(VLCE2_2019)) # columns/rows
 
 counter <- 1
-for (LU_TIF in LUTS_TIFS[1]) {
-
+for (LU_TIF in LUTS_TIFS) {
   print(paste0(counter, " of ", length(LUTS_TIFS), ": ", basename(LU_TIF)))
   
   print("... projecting to Lambert")
