@@ -1,6 +1,6 @@
 library(terra)
 
-# Start timer (Run time on my machine: ~36 mins)
+# Start timer (Run time on my machine: 1.6 hours)
 start_time <- Sys.time()
 
 # Read-in rasters
