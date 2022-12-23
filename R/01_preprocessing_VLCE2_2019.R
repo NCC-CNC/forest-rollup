@@ -48,9 +48,13 @@ terra::writeRaster(CUT_TREED,
 
 # Mosaic Tree outputs
 TREED_CUT_FIRE <- terra::mosaic(VLCE2_2019_TREED, CUT_TREED, FIRE_TREED)
-terra::writeRaster(TREED_CUT_FIRE, 
+
+# Mask out water, rock/rubble and wetland. Fire and Cut overlap these pixels.
+TREED_CUT_FIRE <- rast("C:/Data/National/Landcover/NFIS/CA_forest_VLCE2_2019/CA_forest_VLCE2_2019_Tree_Cut_Fire.tif")
+TREED_CUT_FIRE_MASKED <- terra::mask(TREED_CUT_FIRE, VLCE2_2019, maskvalues = c(20, 32, 80))
+terra::writeRaster(TREED_CUT_FIRE_MASKED, 
   "C:/Data/National/Landcover/NFIS/CA_forest_VLCE2_2019/CA_forest_VLCE2_2019_Tree_Cut_Fire.tif",
-  overwrite = TRUE, datatype = "INT1U")
+   overwrite = TRUE, datatype = "INT1U")
 
 ## End timer
 end_time <- Sys.time()
