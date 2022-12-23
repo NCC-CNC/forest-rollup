@@ -7,7 +7,7 @@ library(raster)
 
 # Start timer (Run time on my machine: ~4 hours)
 start_time <- Sys.time() 
-INPUT <- "C:/Data/National/Landcover/NFIS/CA_forest_VLCE2_2019/COMPSITE_VLCE2_2019_WF_CB_AAFC_LUTS_2020.tif"
+INPUT <- "C:/Data/National/Landcover/NFIS/CA_forest_VLCE2_2019/FOREST_COMPOSITE_30m_VLCE2_2019_WF_CB_AAFC_LUTS_2020.tif"
 OUTPUT <- "C:/Data/National/Landcover/NFIS/CA_forest_VLCE2_2019/FOREST_LU_COMPOSITE_1KM.tif"
 
 # Read-in national 1km raster grid
