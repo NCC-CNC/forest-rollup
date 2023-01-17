@@ -26,8 +26,17 @@ m <- c(0,NA, 20,NA, 31,NA, 32,NA, 33,NA, 40,NA, 50,NA,
        80,NA, 81,1, 100,NA, 210,1, 220,1, 230,1)
 rclmat <- matrix(m, ncol=2, byrow=TRUE)
 VLCE2_2019_TREED <- terra::classify(VLCE2_2019, rclmat)
+# Save to disk
 terra::writeRaster(VLCE2_2019_TREED, 
-  "C:/Data/National/Landcover/NFIS/CA_forest_VLCE2_2019/TREED_CA_forest_VLCE2_2019.tif",
+  "C:/Data/National/Landcover/NFIS/CA_forest_VLCE2_2019/TREED_LC_VLCE2_2019.tif",
+  overwrite = TRUE, datatype = "INT1U")
+# Mask 2020 cutblocks
+VLCE2_2019_CUTMASK2020 <- terra::mask(VLCE2_2019_TREED, CUT, maskvalues = c(2020))
+# Mask 2020 wildfire
+VLCE2_2019_CUTMASK2020_FIREMASK2020 <- terra::mask(VLCE2_2019_CUTMASK2020, FIRE, maskvalues = c(2020))
+# Save to disk
+terra::writeRaster(VLCE2_2019_CUTMASK2020_FIREMASK2020, 
+  "C:/Data/National/Landcover/NFIS/CA_forest_VLCE2_2019/TREED_LC_VLCE2_2020.tif",
   overwrite = TRUE, datatype = "INT1U")
 
 # Reclassify fire to treed
@@ -50,10 +59,9 @@ terra::writeRaster(CUT_TREED,
 TREED_CUT_FIRE <- terra::mosaic(VLCE2_2019_TREED, CUT_TREED, FIRE_TREED)
 
 # Mask out water, rock/rubble and wetland. Fire and Cut overlap these pixels.
-TREED_CUT_FIRE <- rast("C:/Data/National/Landcover/NFIS/CA_forest_VLCE2_2019/CA_forest_VLCE2_2019_Tree_Cut_Fire.tif")
 TREED_CUT_FIRE_MASKED <- terra::mask(TREED_CUT_FIRE, VLCE2_2019, maskvalues = c(20, 32, 80))
 terra::writeRaster(TREED_CUT_FIRE_MASKED, 
-  "C:/Data/National/Landcover/NFIS/CA_forest_VLCE2_2019/CA_forest_VLCE2_2019_Tree_Cut_Fire.tif",
+  "C:/Data/National/Landcover/NFIS/CA_forest_VLCE2_2019/TREED_LU_VLCE2_2019.tif",
    overwrite = TRUE, datatype = "INT1U")
 
 ## End timer
