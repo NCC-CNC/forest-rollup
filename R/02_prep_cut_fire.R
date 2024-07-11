@@ -26,18 +26,7 @@ library(terra)
 
 FIRE <- rast("C:/Data/NAT/LC/NFIS/CA_Forest_Fire_1985-2020/CA_Forest_Fire_1985-2020.tif")
 CUT <- rast("C:/Data/NAT/LC/NFIS/CA_Forest_Harvest_1985-2020/CA_Forest_Harvest_1985-2020.tif")
-
-# TREED_LC_VLCE2 <- file.path(OUT_PREP, "TREED_LC_VLCE2_2019.tif")   # <--- 2019
-TREED_LC_VLCE2 <- file.path(OUT_PREP, "TREED_LC_VLCE2_2020.tif")     # <--- 2020
-# TREED_LC_VLCE2 <- file.path(OUT_PREP, "TREED_LC_VLCE2_2022.tif")   # <--- 2022
-
-
-# VLCE2 <- rast("C:/Data/NAT/LC/NFIS/CA_forest_VLCE2_2019/CA_forest_VLCE2_2019.tif") # <--- 2019
-VLCE2 <- rast("C:/Data/NAT/LC/NFIS/CA_forest_VLCE2_2020/CA_forest_VLCE2_2020.tif")   # <--- 2020
-# VLCE2 <- rast("C:/Data/NAT/LC/NFIS/CA_forest_VLCE2_2022/CA_forest_VLCE2_2022.tif") # <--- 2022
-
 OUT_PREP <- "C:/Data/NAT/Habitat/Forest/Prep"
-
 
 # Reclassify fire to treed
 m <- c(-1,1984,NA, 1985,2020,1)
@@ -59,17 +48,6 @@ terra::writeRaster(
   file.path(OUT_PREP, "TREED_CA_Forest_Harvest_1985-2020.tif"),
   overwrite = TRUE, 
   datatype = "INT1U"
-)
-
-# Mosaic tree outputs
-treed_VLCE2_cut_fire <- terra::mosaic(TREED_LC_VLCE2, cut_treed, fire_treed)
-
-# Mask out water, rock/rubble and wetland. Fire and Cut overlap these pixels.
-treed_VLCE2_cut_fire_mask <- terra::mask(treed_VLCE2_cut_fire, VLCE2, maskvalues = c(20, 32, 80))
-terra::writeRaster(
-  treed_VLCE2_cut_fire_mask,
-  file.path(OUT_PREP, "TREED_LU_VLCE2_2019.tif"), # <--- UPDATE YEAR
-  overwrite = TRUE, datatype = "INT1U"
 )
 
 ## End timer
