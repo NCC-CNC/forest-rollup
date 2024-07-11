@@ -1,7 +1,7 @@
 #
 # Author: Dan Wismer
 #
-# Date: July 1th, 2024
+# Date: July 11th, 2024
 #
 # Description: mosaics treed VLCE2, treed cut and treed fire
 #
@@ -23,7 +23,7 @@
 start_time <- Sys.time()
 library(terra)
 
-OUT_PREP <- "C:/Data/NAT/Habitat/Forest/Prep"
+OUT_PREP <- "C:/Data/NAT/Habitat/Forest/Prep/NFIS"
 
 # VLCE2 <- rast("C:/Data/NAT/LC/NFIS/CA_forest_VLCE2_2019/CA_forest_VLCE2_2019.tif") # <--- 2019
 VLCE2 <- rast("C:/Data/NAT/LC/NFIS/CA_forest_VLCE2_2020/CA_forest_VLCE2_2020.tif")   # <--- 2020
