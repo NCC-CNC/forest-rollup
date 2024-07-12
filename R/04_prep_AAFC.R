@@ -43,7 +43,7 @@
 ## 92: Snow and ice
 
 # Tested on R Versions: 4.4.1
-# Processing time:  ~ 2.1 hours :(
+# Processing time:  ~ 20 mins
 #==============================================================================
 
 library(terra)
@@ -53,6 +53,7 @@ library(gdalUtilities)
 start_time <- Sys.time()
 
 OUT_PREP <- "C:/Data/NAT/Habitat/Forest/Prep/AAFC"
+VLCE2  <- rast("C:/Data/NAT/LC/NFIS/CA_forest_VLCE2_2020/CA_forest_VLCE2_2020.tif") 
 
 AAFC_LUTS <- "C:/Data/NAT/LC/AAFC/LUTS_2020" # <---- 2020
 BACKFILL_TILES <- c(
@@ -64,7 +65,6 @@ BACKFILL_TILES <- c(
   "LU2020_u18", 
   "LU2020_u19"
 )
-VLCE2 <- rast("C:/Data/NAT/LC/NFIS/CA_forest_VLCE2_2020/CA_forest_VLCE2_2020.tif") # <--- 2020
 
 LUTS_TIFS <- list.files(
   file.path(AAFC_LUTS, BACKFILL_TILES), 
@@ -82,67 +82,43 @@ ts <- c(terra::ncol(VLCE2), terra::nrow(VLCE2)) # columns/rows
 counter <- 1
 for (LU_TIF in LUTS_TIFS) {
   print(paste0(counter, " of ", length(LUTS_TIFS), ": ", basename(LU_TIF)))
+  print("... Projecting to Lambert")
   
-  print("... projecting to Lambert")
   # I couldn't figure out a way around this without having edge effects between
   # the two different products come time to extract pixel count to 1km grid. 
   gdalUtilities::gdalwarp(
     srcfile = LU_TIF,
     dstfile = file.path(OUT_PREP, paste0("LAMBERT_",basename(LU_TIF))),
-    te = te,
     t_srs = proj4_string,
-    ts = ts,
+    dstnodata = "255", # no data
+    ot = "Byte", # data type
+    r = "near", # resample method
+    tr = c(30, 30), # Set resolution,
+    co = c("COMPRESS=LZW", "TILED=YES", "BLOCKXSIZE=256", "BLOCKYSIZE=256"), # compression and tiling
     overwrite = TRUE
   )
   
   # Read-in projected AAFC LUT
-  LU_LAMBERT <- rast(file.path(OUT_PREP, paste0("LAMBERT_",basename(LU_TIF))))
-  
-  print("... mask to VLCE2")
-  LU_LAMBERT_MASK <- terra::mask(
-    LU_LAMBERT, 
-    VLCE2, 
-    inverse = TRUE, 
-    maskvalues = 0
-  )
-  
-  print("... reclass to forest")
+  print("... Reclass to forest")
   m <- c(
-    0, NA, 
-    1, NA, 
-    21, NA, 
-    24, 1, 
-    28, NA, 
-    22, NA, 
-    29, NA, 
-    25, NA, 
-    31, NA, 
-    41, 1, 
-    42, 1, 
-    43, 1, 
-    44, 1, 
-    49, 1, 
-    47, 1, 
-    48, 1, 
-    51, NA, 
-    52, NA, 
-    55, NA, 
-    56, NA, 
-    61, NA,  
-    62, NA, 
-    71, NA, 
-    81, NA, 
-    84, NA, 
-    88, NA, 
-    82, NA, 
-    89, NA, 
-    91, NA, 
-    92, NA, 
-    128, NA)
+    0, NA, 1, NA, 21, NA, 
+    24, 1, # forest
+    28, NA, 22, NA, 29, NA, 25, NA, 31, NA, 
+    41, 1, # forest
+    42, 1, # forest
+    43, 1, # forest
+    44, 1, # forest
+    49, 1, # forest
+    47, 1, # forest
+    48, 1, # forest
+    51, NA, 52, NA, 55, NA, 56, NA, 61, NA,  62, NA, 71, NA, 
+    81, NA, 84, NA, 88, NA, 82, NA, 89, NA, 91, NA, 92, NA, 
+    128, NA
+  )
   rclmat <- matrix(m, ncol=2, byrow=TRUE)
-  LU_LAMBERT_TREED <- terra::classify(
-    LU_LAMBERT_MASK, 
-    rclmat,
+  terra::classify(
+    x = rast(file.path(OUT_PREP, paste0("LAMBERT_",basename(LU_TIF)))), 
+    rcl = rclmat,
     filename = file.path(OUT_PREP, paste0("TREED_",basename(LU_TIF))),
     overwrite = TRUE, 
     datatype = "INT1U"
@@ -151,6 +127,52 @@ for (LU_TIF in LUTS_TIFS) {
   # Advance counter
   counter <- counter + 1
 }
+
+# Merge AAFC LUTS TREED
+print("... Mosaic treed rasters")
+treed_tifs <- list.files(OUT_PREP, pattern = "^TREED.*\\.tif$", full.names = TRUE)
+
+# build virtual raster
+gdalUtilities::gdalbuildvrt(
+  gdalfile = treed_tifs, 
+  output.vrt = file.path(OUT_PREP, "AAFC_TREED_NEEDS_MASK.vrt")
+)
+
+# translate virtual raster to tif
+gdalUtilities::gdal_translate(
+  src_dataset = file.path(OUT_PREP, "AAFC_TREED_NEEDS_MASK.vrt"),
+  dst_dataset = file.path(OUT_PREP, "AAFC_TREED_NEEDS_MASK_NOT_ALIGNED.tif"),
+  of = "GTiff",
+  a_nodata = "255", # no data
+  ot = "Byte", # data type
+  co = c("COMPRESS=LZW", "TILED=YES", "BLOCKXSIZE=256", "BLOCKYSIZE=256") # compression and tiling
+)
+
+# align to VLCE2, this is needed for terra::mask
+gdalUtilities::gdalwarp(
+  srcfile = file.path(OUT_PREP, "AAFC_TREED_NEEDS_MASK_NOT_ALIGNED.tif"),
+  dstfile = file.path(OUT_PREP, "AAFC_TREED_NEEDS_MASKED_ALIGNED.tif"),
+  t_srs = proj4_string,
+  dstnodata = "255", # no data
+  ot = "Byte", # data type
+  r = "near", # resample method
+  tr = c(30, 30), # Set resolution,
+  co = c("COMPRESS=LZW", "TILED=YES", "BLOCKXSIZE=256", "BLOCKYSIZE=256"), # compression and tiling
+  overwrite = TRUE,
+  te = te, # columns/rows
+  ts = ts # xmin, ymin, xmax, ymax
+)
+
+# Mask to VLCE2
+terra::mask(
+  x = rast(file.path(OUT_PREP, "AAFC_TREED_NEEDS_MASKED_ALIGNED.tif")),
+  mask = VLCE2,
+  inverse = TRUE,
+  maskvalues = 0,
+  filename = file.path(OUT_PREP, "AAFC_TREED.tif"),
+  overwrite = TRUE,
+  datatype = "INT1U" # 8 bit unsigned 
+)
 
 ## End timer
 end_time <- Sys.time()
