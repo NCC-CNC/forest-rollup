@@ -27,8 +27,8 @@
 # 230 = mixed wood
 #
 #
-# Tested on R Versions: 4.3.0
-# Processing time:  ~ 19 mins
+# Tested on R Versions: 4.4.1
+# Processing time:  ~ 6 mins 
 #==============================================================================
 
 start_time <- Sys.time()
@@ -57,16 +57,14 @@ m <- c(
   230, 1   # Forest
 )
 rclmat <- matrix(m, ncol = 2, byrow = TRUE)
-VLCE2_treed <- terra::classify(VLCE2 , rclmat)
 
-# Save to disk
-terra::writeRaster(
-  VLCE2_treed, 
-  file.path(OUT_PREP, "TREED_LC_VLCE2_2020.tif"), # <--- UPDATE YEAR
+terra::classify(
+  x = VLCE2, 
+  rcl = rclmat,
+  filename = file.path(OUT_PREP, "TREED_LC_VLCE2_2020.tif"), # <--- UPDATE YEAR
   overwrite = TRUE, 
-  datatype = "INT1U"
+  datatype = "INT1U" # 8 bit unsigned 
 )
-
 
 ## End timer
 end_time <- Sys.time()
