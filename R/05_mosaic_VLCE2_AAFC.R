@@ -20,20 +20,23 @@ library(gdalUtilities)
 # Start timer
 start_time <- Sys.time()
 
+# Inputs -----------------------------------------------------------------------
+
 OUT <- "C:/Data/NAT/Habitat/Forest"
 
 # NFIS Land Cover
-# VLCE2 <- file.path(OUT, "NFIS/TREED_LC_VLCE2_2019.tif")    # <--- 2019
-VLCE2_LC <- file.path(OUT, "Prep/NFIS/TREED_LC_VLCE2_2020.tif")   # <--- 2020
-# VLCE2 <- file.path(OUT, "/FIS/TREED_LC_VLCE2_2022.tif")    # <--- 2022
+# VLCE2 <- file.path(OUT, "NFIS/TREED_LC_VLCE2_2019.tif")            # <--- 2019
+VLCE2_LC <- file.path(OUT, "Prep/NFIS/TREED_LC_VLCE2_2020.tif")      # <--- 2020
+# VLCE2 <- file.path(OUT, "/FIS/TREED_LC_VLCE2_2022.tif")            # <--- 2022
 
 # NFIS Land Use
-# VLCE2 <- file.path(OUT, "NFIS/TREED_LU_VLCE2_2019.tif")    # <--- 2019
-VLCE2_LU <- file.path(OUT, "Prep/NFIS/TREED_LU_VLCE2_2020.tif")   # <--- 2020
-# VLCE2 <- file.path(OUT, "NFIS/TREED_LU_VLCE2_2022.tif")    # <--- 2022
+# VLCE2 <- file.path(OUT, "NFIS/TREED_LU_VLCE2_2019.tif")            # <--- 2019
+VLCE2_LU <- file.path(OUT, "Prep/NFIS/TREED_LU_VLCE2_2020.tif")      # <--- 2020
+# VLCE2 <- file.path(OUT, "NFIS/TREED_LU_VLCE2_2022.tif")            # <--- 2022
 
 # AAFC Land Cover
-AAFC <- file.path(OUT, "Prep/AAFC/AAFC_TREED_2020.tif")           # <--- 2020
+AAFC <- file.path(OUT, "Prep/AAFC/AAFC_TREED_2020.tif")              # <--- 2020
+#-------------------------------------------------------------------------------
 
 # Mosaic for Land Cover
 gdalUtilities::gdalbuildvrt(

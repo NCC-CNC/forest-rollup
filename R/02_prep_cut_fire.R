@@ -24,9 +24,14 @@
 start_time <- Sys.time()
 library(terra)
 
+# Inputs -----------------------------------------------------------------------
+
 FIRE <- rast("C:/Data/NAT/LC/NFIS/CA_Forest_Fire_1985-2020/CA_Forest_Fire_1985-2020.tif")
+
 CUT <- rast("C:/Data/NAT/LC/NFIS/CA_Forest_Harvest_1985-2020/CA_Forest_Harvest_1985-2020.tif")
+
 OUT_PREP <- "C:/Data/NAT/Habitat/Forest/Prep/NFIS"
+#-------------------------------------------------------------------------------
 
 # Reclassify fire to treed
 m <- c(-1,1984,NA, 1985,2020,1) # <= 2020

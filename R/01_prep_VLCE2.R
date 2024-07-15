@@ -34,11 +34,14 @@
 start_time <- Sys.time()
 library(terra)
 
+# Inputs -----------------------------------------------------------------------
 
 # VLCE2  <- rast("C:/Data/NAT/LC/NFIS/CA_forest_VLCE2_2019/CA_forest_VLCE2_2019.tif")  # <---- 2019
 VLCE2  <- rast("C:/Data/NAT/LC/NFIS/CA_forest_VLCE2_2020/CA_forest_VLCE2_2020.tif")  # <---- 2020
 # VLCE2 <- rast("C:/Data/NAT/LC/NFIS/CA_forest_VLCE2_2022/CA_forest_VLCE2_2022.tif") # <---- 2022
+
 OUT_PREP <- "C:/Data/NAT/Habitat/Forest/Prep/NFIS" 
+#-------------------------------------------------------------------------------
 
 # Reclassify VLCE2 to treed  
 m <- c(
