@@ -18,7 +18,7 @@
 # if processing VLCE2 2019, mask out 2020 wildfires and cutblocks
 #
 # Tested on R Versions: 4.4.1
-# Processing time:  ~ 11 mins
+# Processing time:  ~ 9 mins
 #==============================================================================
 
 start_time <- Sys.time()
