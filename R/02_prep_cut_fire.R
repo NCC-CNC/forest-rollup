@@ -43,7 +43,7 @@ terra::classify(
 # Reclassify cut to treed
 m <- c(-1,1984,NA, 1985,2020,1) # <= 2020
 rclmat <- matrix(m, ncol=3, byrow=TRUE)
-cut_treed <- terra::classify(
+terra::classify(
   x = CUT, 
   rcl = rclmat, 
   right = NA,
