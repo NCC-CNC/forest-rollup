@@ -169,7 +169,7 @@ terra::mask(
   mask = VLCE2,
   inverse = TRUE,
   maskvalues = 0,
-  filename = file.path(OUT_PREP, "AAFC_TREED.tif"),
+  filename = file.path(OUT_PREP, "AAFC_TREED_2020.tif"),
   overwrite = TRUE,
   datatype = "INT1U" # 8 bit unsigned 
 )
