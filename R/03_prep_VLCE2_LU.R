@@ -22,6 +22,7 @@
 
 start_time <- Sys.time()
 library(terra)
+library(gdalUtilities)
 
 OUT_PREP <- "C:/Data/NAT/Habitat/Forest/Prep/NFIS"
 
@@ -30,23 +31,37 @@ VLCE2 <- rast("C:/Data/NAT/LC/NFIS/CA_forest_VLCE2_2020/CA_forest_VLCE2_2020.tif
 # VLCE2 <- rast("C:/Data/NAT/LC/NFIS/CA_forest_VLCE2_2022/CA_forest_VLCE2_2022.tif") # <--- 2022
 
 # TREED_LC_VLCE2 <- rast(file.path(OUT_PREP, "TREED_LC_VLCE2_2019.tif"))   # <--- 2019
-TREED_LC_VLCE2 <- rast(file.path(OUT_PREP, "TREED_LC_VLCE2_2020.tif"))     # <--- 2020
+TREED_LC_VLCE2 <- file.path(OUT_PREP, "TREED_LC_VLCE2_2020.tif")   # <--- 2020
 # TREED_LC_VLCE2 <- rast(file.path(OUT_PREP, "TREED_LC_VLCE2_2022.tif"))   # <--- 2022
 
-CUT_TREED <- rast(file.path(OUT_PREP, "TREED_CA_Forest_Harvest_1985-2020.tif"))     # <--- 2020
-FIRE_TREED <- rast(file.path(OUT_PREP, "TREED_CA_Forest_Fire_1985-2020.tif"))     # <--- 2020
+CUT_TREED <- file.path(OUT_PREP, "TREED_CA_Forest_Harvest_1985-2020.tif")    # <--- 2020
+FIRE_TREED <- file.path(OUT_PREP, "TREED_CA_Forest_Fire_1985-2020.tif")     # <--- 2020
 
 # Mosaic treed outputs
-treed <- terra::sprc(list(TREED_LC_VLCE2, CUT_TREED, FIRE_TREED))
-treed_VLCE2_cut_fire <- terra::mosaic(treed, fun="max")
+gdalUtilities::gdalbuildvrt(
+  gdalfile = c(CUT_TREED, FIRE_TREED,  TREED_LC_VLCE2),
+  output.vrt = file.path(OUT_PREP, "TREED_LU_VLCE2_2020_NO_MASK.vrt"),
+  vrtnodata = 255,
+  srcnodata = 255
+)
+
+gdalUtilities::gdal_translate(
+  src_dataset = file.path(OUT_PREP, "TREED_LU_VLCE2_2020_NO_MASK.vrt"),
+  dst_dataset = file.path(OUT_PREP, "TREED_LU_VLCE2_2020_NO_MASK.tif"),
+  of = "GTiff",
+  a_nodata = "255", # no data
+  ot = "Byte", # data type
+  co = c("COMPRESS=LZW", "TILED=YES", "BLOCKXSIZE=256", "BLOCKYSIZE=256") # compression and tiling
+)
 
 # Mask out water, rock/rubble and wetland. Fire and Cut overlap these pixels.
-treed_VLCE2_cut_fire_mask <- terra::mask(treed_VLCE2_cut_fire, VLCE2, maskvalues = c(20, 32, 80))
-terra::writeRaster(
-  treed_VLCE2_cut_fire_mask,
-  file.path(OUT_PREP, "TREED_LU_VLCE2_2020.tif"), # <--- UPDATE YEAR
-  overwrite = TRUE, 
-  datatype = "INT1U"
+terra::mask(
+  x = rast(file.path(OUT_PREP, "TREED_LU_VLCE2_2020_NO_MASK.tif")),
+  mask = VLCE2,
+  maskvalues = c(20, 32, 80),
+  filename = file.path(OUT_PREP, "TREED_LU_VLCE2_2020.tif"),
+  overwrite = TRUE,
+  datatype = "INT1U" # 8 bit unsigned 
 )
 
 ## End timer
