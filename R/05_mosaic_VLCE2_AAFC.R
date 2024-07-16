@@ -16,6 +16,7 @@
 #==============================================================================
 
 library(gdalUtilities)
+library(terra)
 
 # Start timer
 start_time <- Sys.time()
