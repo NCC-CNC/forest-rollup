@@ -48,11 +48,19 @@ gdalUtilities::gdalbuildvrt(
 # Translate .vrt to .tif
 gdalUtilities::gdal_translate(
   src_dataset = file.path(OUT, "Prep/Forest_LC_30m_2020.vrt"),
-  dst_dataset = file.path(OUT, "Forest_LC_30m_2020.tif"),
+  dst_dataset = file.path(OUT, "Prep/Forest_LC_30m_2020.tif"),
   of = "GTiff",
   a_nodata = "255", # no data
   ot = "Byte", # data type
   co = c("COMPRESS=LZW", "TILED=YES", "BLOCKXSIZE=256", "BLOCKYSIZE=256") # compression and tiling
+)
+
+# Need to do this so values are 1-1 when pulled into Pro.
+writeRaster(
+  x = rast(file.path(OUT, "Prep/Forest_LC_30m_2020.tif")),
+  filename = file.path(OUT, "Forest_LC_30m_2020.tif"),
+  overwrite = TRUE,
+  datatype = "INT1U" # 8 bit unsigned 
 )
 
 # Mosaic for Land Use
@@ -65,11 +73,19 @@ gdalUtilities::gdalbuildvrt(
 # Translate .vrt to .tif
 gdalUtilities::gdal_translate(
   src_dataset = file.path(OUT, "Prep/Forest_LU_30m_2020.vrt"),
-  dst_dataset = file.path(OUT, "Forest_LU_30m_2020.tif"),
+  dst_dataset = file.path(OUT, "Prep/Forest_LU_30m_2020.tif"),
   of = "GTiff",
   a_nodata = "255", # no data
   ot = "Byte", # data type
   co = c("COMPRESS=LZW", "TILED=YES", "BLOCKXSIZE=256", "BLOCKYSIZE=256") # compression and tiling
+)
+
+# Need to do this so values are 1-1 when pulled into Pro.
+writeRaster(
+  x = rast(file.path(OUT, "Prep/Forest_LC_30m_2020.tif")),
+  filename = file.path(OUT, "Forest_LC_30m_2020.tif"),
+  overwrite = TRUE,
+  datatype = "INT1U" # 8 bit unsigned 
 )
 
 ## End timer
