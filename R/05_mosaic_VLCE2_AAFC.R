@@ -15,41 +15,41 @@
 # Processing time:  ~ 4 minutes
 #==============================================================================
 
+start_time <- Sys.time()
 library(gdalUtilities)
 library(terra)
 
-# Start timer
-start_time <- Sys.time()
-
 # Inputs -----------------------------------------------------------------------
+
+NFIS_YEAR <- 2020 # <---- SET YEAR
+NFIS_YEAR <- paste0("_", NFIS_YEAR) 
+
+AAFC_YEAR <- 2020 # <---- SET YEAR
+AAFC_YEAR <- paste0("_", AAFC_YEAR) 
 
 OUT <- "C:/Data/NAT/Habitat/Forest"
 
 # NFIS Land Cover
-# VLCE2 <- file.path(OUT, "NFIS/TREED_LC_VLCE2_2019.tif")            # <--- 2019
-VLCE2_LC <- file.path(OUT, "Prep/NFIS/TREED_LC_VLCE2_2020.tif")      # <--- 2020
-# VLCE2 <- file.path(OUT, "/FIS/TREED_LC_VLCE2_2022.tif")            # <--- 2022
+VLCE2_LC <- file.path(OUT, "Prep/NFIS", NFIS_YEAR, "TREED_LC_VLCE2.tif")            
 
 # NFIS Land Use
-# VLCE2 <- file.path(OUT, "NFIS/TREED_LU_VLCE2_2019.tif")            # <--- 2019
-VLCE2_LU <- file.path(OUT, "Prep/NFIS/TREED_LU_VLCE2_2020.tif")      # <--- 2020
-# VLCE2 <- file.path(OUT, "NFIS/TREED_LU_VLCE2_2022.tif")            # <--- 2022
+VLCE2_LU <- file.path(OUT, "Prep/NFIS", NFIS_YEAR, "TREED_LU_VLCE2.tif")  
 
-# AAFC Land Cover
-AAFC <- file.path(OUT, "Prep/AAFC/AAFC_TREED_2020.tif")              # <--- 2020
+# AAFC Land Use
+AAFC <- file.path(OUT, "Prep/AAFC", AAFC_YEAR, "AAFC_TREED.tif")            
 #-------------------------------------------------------------------------------
 
 # Mosaic for Land Cover
 gdalUtilities::gdalbuildvrt(
   gdalfile = c(VLCE2_LC, AAFC),
-  output.vrt = file.path(OUT, "Prep/Forest_LC_30m_2020.vrt"),
+  output.vrt = file.path(OUT, paste0("Prep/Forest_LC_30m", NFIS_YEAR, ".vrt")), 
   vrtnodata = 255,
   srcnodata = 255
 )
 # Translate .vrt to .tif
 gdalUtilities::gdal_translate(
-  src_dataset = file.path(OUT, "Prep/Forest_LC_30m_2020.vrt"),
-  dst_dataset = file.path(OUT, "Prep/Forest_LC_30m_2020.tif"),
+  src_dataset = file.path(OUT, paste0("Prep/Forest_LC_30m", NFIS_YEAR, ".vrt")), 
+  dst_dataset = file.path(OUT, paste0("Prep/Forest_LC_30m", NFIS_YEAR, ".tif")),
   of = "GTiff",
   a_nodata = "255", # no data
   ot = "Byte", # data type
@@ -58,8 +58,8 @@ gdalUtilities::gdal_translate(
 
 # Need to do this so values are 1-1 when pulled into Pro.
 writeRaster(
-  x = rast(file.path(OUT, "Prep/Forest_LC_30m_2020.tif")),
-  filename = file.path(OUT, "Forest_LC_30m_2020.tif"),
+  x = rast(file.path(OUT, paste0("Prep/Forest_LC_30m", NFIS_YEAR, ".tif"))), 
+  filename = file.path(OUT, paste0("Forest_LC_30m", NFIS_YEAR, ".tif")),     
   overwrite = TRUE,
   datatype = "INT1U" # 8 bit unsigned 
 )
@@ -67,14 +67,14 @@ writeRaster(
 # Mosaic for Land Use
 gdalUtilities::gdalbuildvrt(
   gdalfile = c(VLCE2_LU, AAFC),
-  output.vrt = file.path(OUT, "Prep/Forest_LU_30m_2020.vrt"),
+  output.vrt = file.path(OUT, paste0("Prep/Forest_LU_30m", NFIS_YEAR, ".vrt")),
   vrtnodata = 255,
   srcnodata = 255
 )
 # Translate .vrt to .tif
 gdalUtilities::gdal_translate(
-  src_dataset = file.path(OUT, "Prep/Forest_LU_30m_2020.vrt"),
-  dst_dataset = file.path(OUT, "Prep/Forest_LU_30m_2020.tif"),
+  src_dataset = file.path(OUT, paste0("Prep/Forest_LU_30m", NFIS_YEAR, ".vrt")), 
+  dst_dataset = file.path(OUT, paste0("Prep/Forest_LU_30m", NFIS_YEAR, ".tif")), 
   of = "GTiff",
   a_nodata = "255", # no data
   ot = "Byte", # data type
@@ -83,8 +83,8 @@ gdalUtilities::gdal_translate(
 
 # Need to do this so values are 1-1 when pulled into Pro.
 writeRaster(
-  x = rast(file.path(OUT, "Prep/Forest_LC_30m_2020.tif")),
-  filename = file.path(OUT, "Forest_LC_30m_2020.tif"),
+  x = rast(file.path(OUT, paste0("Prep/Forest_LU_30m", NFIS_YEAR, ".tif"))),
+  filename = file.path(OUT, paste0("Forest_LU_30m", NFIS_YEAR, ".tif")),
   overwrite = TRUE,
   datatype = "INT1U" # 8 bit unsigned 
 )

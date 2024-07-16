@@ -28,7 +28,7 @@
 #
 #
 # Tested on R Versions: 4.4.1
-# Processing time:  ~ 6 mins 
+# Processing time:  ~ 13 mins 
 #==============================================================================
 
 start_time <- Sys.time()
@@ -36,10 +36,19 @@ library(terra)
 
 # Inputs -----------------------------------------------------------------------
 
-# VLCE2  <- rast("C:/Data/NAT/LC/NFIS/CA_forest_VLCE2_2019/CA_forest_VLCE2_2019.tif")  # <---- 2019
-VLCE2  <- rast("C:/Data/NAT/LC/NFIS/CA_forest_VLCE2_2020/CA_forest_VLCE2_2020.tif")  # <---- 2020
-# VLCE2 <- rast("C:/Data/NAT/LC/NFIS/CA_forest_VLCE2_2022/CA_forest_VLCE2_2022.tif") # <---- 2022
+NFIS_YEAR <- 2020 # <---- SET YEAR
+NFIS_YEAR <- paste0("_", NFIS_YEAR) 
+RAW_DATA <- "C:/Data/NAT/LC/NFIS" # <--- location of raw data
 
+# Read-in NFIS VCLE2 Land Cover
+VLCE2 <- rast(
+  file.path(
+    RAW_DATA, 
+    paste0("CA_forest_VLCE2", NFIS_YEAR), 
+    paste0("CA_forest_VLCE2", NFIS_YEAR, ".tif")
+  )
+)
+  
 OUT_PREP <- "C:/Data/NAT/Habitat/Forest/Prep/NFIS" 
 #-------------------------------------------------------------------------------
 
@@ -53,18 +62,18 @@ m <- c(
   40,  NA, 
   50,  NA, 
   80,  NA, 
-  81,  1,   # Forest
+  81,  1,   # Wetland-treed
   100, NA,
-  210, 1,  # Forest
-  220, 1,  # Forest
-  230, 1   # Forest
+  210, 1,  # Coniferous
+  220, 1,  # Broad leaf
+  230, 1   # Mixed wood
 )
 rclmat <- matrix(m, ncol = 2, byrow = TRUE)
 
 terra::classify(
   x = VLCE2, 
   rcl = rclmat,
-  filename = file.path(OUT_PREP, "TREED_LC_VLCE2_2020.tif"), # <--- UPDATE YEAR
+  filename = file.path(OUT_PREP, NFIS_YEAR, "TREED_LC_VLCE2.tif"), 
   overwrite = TRUE, 
   datatype = "INT1U" # 8 bit unsigned 
 )

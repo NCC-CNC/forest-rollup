@@ -46,20 +46,33 @@
 # Processing time:  ~ 15.5 mins
 #==============================================================================
 
+start_time <- Sys.time()
 library(terra)
 library(gdalUtilities)
 
-## Start timer (Run time on my machine: ~4 mins)
-start_time <- Sys.time()
-
 # Inputs -----------------------------------------------------------------------
 
+AAFC_YEAR <- 2020 # 2020 is the only AAFC option.
+AAFC_YEAR <- paste0("_", AAFC_YEAR)
+
+NFIS_RAW <- "C:/Data/NAT/LC/NFIS" # <--- location of NFIS raw data
+AAFC_RAW <- "C:/Data/NAT/LC/AAFC" # <--- location of AAFC raw data
+
+# Read-in NFIS VCLE2 Land Cover (only needed for getting raster properties)
+VLCE2 <- rast(
+  file.path(
+    NFIS_RAW, 
+    paste0("CA_forest_VLCE2", AAFC_YEAR), 
+    paste0("CA_forest_VLCE2", AAFC_YEAR, ".tif")
+  )
+)
+
+# Prepped output folder
 OUT_PREP <- "C:/Data/NAT/Habitat/Forest/Prep/AAFC"
 
-VLCE2  <- rast("C:/Data/NAT/LC/NFIS/CA_forest_VLCE2_2020/CA_forest_VLCE2_2020.tif") 
-#-------------------------------------------------------------------------------
-
-AAFC_LUTS <- "C:/Data/NAT/LC/AAFC/LUTS_2020" # <---- 2020
+# Exact tiles needed for back-fill
+AAFC_LUTS <- file.path(AAFC_RAW, paste0("LUTS", YEAR)) 
+# HARD CODED FOR NOW. NEEDS TO BE UPDATE WHEN 2025 DATA IS AVAIALBLE
 BACKFILL_TILES <- c(
   "LU2020_u11", 
   "LU2020_u12", 
@@ -69,6 +82,8 @@ BACKFILL_TILES <- c(
   "LU2020_u18", 
   "LU2020_u19"
 )
+
+#-------------------------------------------------------------------------------
 
 LUTS_TIFS <- list.files(
   file.path(AAFC_LUTS, BACKFILL_TILES), 
@@ -108,15 +123,15 @@ for (LU_TIF in LUTS_TIFS) {
   terra::classify(
     x = rast(LU_TIF), 
     rcl = rclmat,
-    filename = file.path(OUT_PREP, paste0("FOREST_",basename(LU_TIF))),
+    filename = file.path(OUT_PREP, AAFC_YEAR,  paste0("FOREST_",basename(LU_TIF))),
     overwrite = TRUE, 
     datatype = "INT1U"
   )                                        
   
   print("... project to Lambert_Conformal_Conic_2SP and algin")
   gdalUtilities::gdalwarp(
-    srcfile = file.path(OUT_PREP, paste0("FOREST_",basename(LU_TIF))),
-    dstfile = file.path(OUT_PREP, paste0("LAMBERT_FOREST_",basename(LU_TIF))),
+    srcfile = file.path(OUT_PREP, AAFC_YEAR, paste0("FOREST_",basename(LU_TIF))),
+    dstfile = file.path(OUT_PREP, AAFC_YEAR, paste0("LAMBERT_FOREST_",basename(LU_TIF))),
     t_srs = proj4_string, # Lambert_Conformal_Conic_2SP
     dstnodata = "255", # no data
     ot = "Byte", # data type
@@ -134,20 +149,22 @@ for (LU_TIF in LUTS_TIFS) {
 
 # Merge AAFC LAMBERT_FOREST_
 print("... Mosaic treed rasters")
-treed_tifs <- list.files(OUT_PREP, pattern = "^LAMBERT.*\\.tif$", full.names = TRUE)
+treed_tifs <- list.files(
+  file.path(OUT_PREP, AAFC_YEAR),  pattern = "^LAMBERT.*\\.tif$", full.names = TRUE
+)
 
 # build virtual raster
 gdalUtilities::gdalbuildvrt(
   gdalfile = treed_tifs, 
-  output.vrt = file.path(OUT_PREP, "AAFC_VRT.vrt"),
+  output.vrt = file.path(OUT_PREP, AAFC_YEAR, "AAFC_VRT.vrt"),
   vrtnodata = 255,
   srcnodata = 255
 )
 
 # translate virtual raster to tif
 gdalUtilities::gdal_translate(
-  src_dataset = file.path(OUT_PREP, "AAFC_VRT.vrt"),
-  dst_dataset = file.path(OUT_PREP, "AAFC_VRT.tif"),
+  src_dataset = file.path(OUT_PREP, AAFC_YEAR, "AAFC_VRT.vrt"),
+  dst_dataset = file.path(OUT_PREP, AAFC_YEAR, "AAFC_VRT.tif"),
   of = "GTiff",
   a_nodata = "255", # no data
   ot = "Byte", # data type
@@ -156,11 +173,11 @@ gdalUtilities::gdal_translate(
 
 # Mask to VLCE2
 terra::mask(
-  x = rast(file.path(OUT_PREP, "AAFC_VRT.tif")),
+  x = rast(file.path(OUT_PREP, AAFC_YEAR, "AAFC_VRT.tif")),
   mask = VLCE2,
   inverse = TRUE,
   maskvalues = 0,
-  filename = file.path(OUT_PREP, "AAFC_TREED_2020.tif"),
+  filename = file.path(OUT_PREP, AAFC_YEAR, "AAFC_TREED.tif"),
   overwrite = TRUE,
   datatype = "INT1U" # 8 bit unsigned 
 )

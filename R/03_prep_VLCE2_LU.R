@@ -28,30 +28,41 @@ library(gdalUtilities)
 
 OUT_PREP <- "C:/Data/NAT/Habitat/Forest/Prep/NFIS"
 
-# VLCE2 <- rast("C:/Data/NAT/LC/NFIS/CA_forest_VLCE2_2019/CA_forest_VLCE2_2019.tif")   # <--- 2019
-VLCE2 <- rast("C:/Data/NAT/LC/NFIS/CA_forest_VLCE2_2020/CA_forest_VLCE2_2020.tif")     # <--- 2020
-# VLCE2 <- rast("C:/Data/NAT/LC/NFIS/CA_forest_VLCE2_2022/CA_forest_VLCE2_2022.tif")   # <--- 2022
+NFIS_YEAR <- 2020 # <---- SET YEAR
+NFIS_YEAR <- paste0("_", NFIS_YEAR)
 
-# TREED_LC_VLCE2 <- rast(file.path(OUT_PREP, "TREED_LC_VLCE2_2019.tif"))        # <--- 2019
-TREED_LC_VLCE2 <- file.path(OUT_PREP, "TREED_LC_VLCE2_2020.tif")                # <--- 2020
-# TREED_LC_VLCE2 <- rast(file.path(OUT_PREP, "TREED_LC_VLCE2_2022.tif"))        # <--- 2022
+CUT_FIRE_YEAR <- 2020 # <---- SET YEAR (options, 2019 and 2020)
+CUT_FIRE_YEAR <- paste0("_", CUT_FIRE_YEAR) 
 
-CUT_TREED <- file.path(OUT_PREP, "TREED_CA_Forest_Harvest_1985-2020.tif")       # <--- 2020
+RAW_DATA <- "C:/Data/NAT/LC/NFIS" # <--- location of raw data
 
-FIRE_TREED <- file.path(OUT_PREP, "TREED_CA_Forest_Fire_1985-2020.tif")         # <--- 2020
+# Read-in NFIS VCLE2 Land Cover
+VLCE2 <- rast(
+  file.path(
+    RAW_DATA, 
+    paste0("CA_forest_VLCE2", NFIS_YEAR), 
+    paste0("CA_forest_VLCE2", NFIS_YEAR, ".tif")
+  )
+)
+
+TREED_LC_VLCE2 <- file.path(OUT_PREP, NFIS_YEAR, "TREED_LC_VLCE2.tif")         
+
+CUT_TREED <- file.path(OUT_PREP, CUT_FIRE_YEAR, "TREED_CA_Forest_Harvest.tif")       
+
+FIRE_TREED <- file.path(OUT_PREP, CUT_FIRE_YEAR, "TREED_CA_Forest_Fire.tif")     
 #-------------------------------------------------------------------------------
 
 # Mosaic to create Forest Land Use
 gdalUtilities::gdalbuildvrt(
   gdalfile = c(CUT_TREED, FIRE_TREED, TREED_LC_VLCE2),
-  output.vrt = file.path(OUT_PREP, "TREED_LU_VLCE2_2020_NO_MASK.vrt"),
+  output.vrt = file.path(OUT_PREP, NFIS_YEAR, "TREED_LU_VLCE2_NO_MASK.vrt"), 
   vrtnodata = 255,
   srcnodata = 255
 )
 # Translate .vrt to .tif
 gdalUtilities::gdal_translate(
-  src_dataset = file.path(OUT_PREP, "TREED_LU_VLCE2_2020_NO_MASK.vrt"),
-  dst_dataset = file.path(OUT_PREP, "TREED_LU_VLCE2_2020_NO_MASK.tif"),
+  src_dataset = file.path(OUT_PREP, NFIS_YEAR, "TREED_LU_VLCE2_NO_MASK.vrt"), 
+  dst_dataset = file.path(OUT_PREP, NFIS_YEAR, "TREED_LU_VLCE2_NO_MASK.tif"), 
   of = "GTiff",
   a_nodata = "255", # no data
   ot = "Byte", # data type
@@ -61,10 +72,10 @@ gdalUtilities::gdal_translate(
 # Mask out water, rock/rubble and wetland; 
 # Fire and Cut overlap these pixels.
 terra::mask(
-  x = rast(file.path(OUT_PREP, "TREED_LU_VLCE2_2020_NO_MASK.tif")),
+  x = rast(file.path(OUT_PREP, NFIS_YEAR, "TREED_LU_VLCE2_NO_MASK.tif")), 
   mask = VLCE2,
   maskvalues = c(20, 32, 80),
-  filename = file.path(OUT_PREP, "TREED_LU_VLCE2_2020.tif"),
+  filename = file.path(OUT_PREP, NFIS_YEAR, "TREED_LU_VLCE2.tif"),
   overwrite = TRUE,
   datatype = "INT1U" # 8 bit unsigned 
 )
