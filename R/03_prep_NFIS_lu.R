@@ -28,7 +28,7 @@ library(gdalUtilities)
 
 OUT_PREP <- "C:/Data/NAT/Habitat/Forest/Prep/NFIS"
 
-NFIS_YEAR <- 2020 # <---- SET YEAR
+NFIS_YEAR <- 2022 # <---- SET YEAR
 NFIS_YEAR <- paste0("_", NFIS_YEAR)
 
 CUT_FIRE_YEAR <- 2020 # <---- SET YEAR (options, 2019 and 2020)

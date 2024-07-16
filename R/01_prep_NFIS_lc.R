@@ -28,7 +28,7 @@
 #
 #
 # Tested on R Versions: 4.4.1
-# Processing time:  ~ 13 mins 
+# Processing time:  ~ 5 mins 
 #==============================================================================
 
 start_time <- Sys.time()
@@ -36,7 +36,7 @@ library(terra)
 
 # Inputs -----------------------------------------------------------------------
 
-NFIS_YEAR <- 2020 # <---- SET YEAR
+NFIS_YEAR <- 2022 # <---- SET YEAR
 NFIS_YEAR <- paste0("_", NFIS_YEAR) 
 RAW_DATA <- "C:/Data/NAT/LC/NFIS" # <--- location of raw data
 

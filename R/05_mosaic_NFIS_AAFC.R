@@ -21,7 +21,7 @@ library(terra)
 
 # Inputs -----------------------------------------------------------------------
 
-NFIS_YEAR <- 2020 # <---- SET YEAR
+NFIS_YEAR <- 2022 # <---- SET YEAR
 NFIS_YEAR <- paste0("_", NFIS_YEAR) 
 
 AAFC_YEAR <- 2020 # <---- SET YEAR
