@@ -2,11 +2,11 @@
 This repo contains the workflow for constructing forest habitat metric at a 30m and 1km scale.
 
 ### Sources
-NFIS covers treed pixels in forest dominetaed ecosystesm. AAFC covers the agricultral south.
+NFIS covers treed pixels in forest dominated ecosystems. AAFC covers the agricultural south.
 - [NFIS](https://opendata.nfis.org/mapserver/nfis-change_eng.html) VLCE2 Land Cover (30m)
 - [AAFC LUTS](https://open.canada.ca/data/en/dataset/7a098ea9-cc31-4d79-b326-89f6cd1fbb7d) Land Use (30m)
 
 ![extent](https://github.com/NCC-CNC/forest-rollup/blob/main/product_extent_figure.jpg) 
 
 ### High level methods
-Products are reclassifed to forest and mosaiked together. The 30m composite is rolled-up to the 1km gird using a pixel count method.
+Products are reclassified to forest and mosaicked together. The 30m composite is rolled-up to the 1km gird using a pixel count method.
