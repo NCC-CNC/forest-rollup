@@ -1,62 +1,86 @@
+#
+# Author: Dan Wismer
+#
+# Date: July 17th, 2024
+#
+# Description: 1km roll-up method
+#
+# Inputs:  - final forest 30m layers
+#          - Output folder 
+#
+# Outputs: - 1km forest layers
+#
+# Tested on R Versions: 4.4.1
+# Processing time:  ~ 4 minutes
+#==============================================================================
+
+start_time <- Sys.time()
 library(terra)
 library(exactextractr)
 library(sf)
 library(dplyr)
-library(fasterize)
-library(raster)
 
-# Start timer (Run time on my machine: ~4 hours)
-start_time <- Sys.time()
-LC_INPUT <- "C:/Data/National/Landcover/NFIS/CA_forest_VLCE2_2019/FOREST_LC_COMPOSITE_30M.tif"
-LC_OUTPUT <- "C:/Data/National/Landcover/NFIS/CA_forest_VLCE2_2019/FOREST_LC_COMPOSITE_1KM.tif"
-LU_INPUT <- "C:/Data/National/Landcover/NFIS/CA_forest_VLCE2_2019/FOREST_LU_COMPOSITE_30M.tif"
-LU_OUTPUT <- "C:/Data/National/Landcover/NFIS/CA_forest_VLCE2_2019/FOREST_LU_COMPOSITE_1KM.tif"
+# Inputs -----------------------------------------------------------------------
 
-# Read-in national 1km raster grid
-NCC_1KM_GRID <- raster("C:/Data/Boundaries/NCC_1KM_IDX.tif")
+YEAR <- 2022 # <---- SET YEAR
 
-# Read-in 30m treed pixels (source)
-LC_TREED_30m <- rast(LC_INPUT)
-LU_TREED_30m <- rast(LU_INPUT)
+OUT <- "C:/Data/NAT/Habitat/Forest"
+
+FOREST_LC <- rast(file.path(OUT, paste0("Forest_LC_30m_", YEAR, ".tif")))
+FOREST_LU <- rast(file.path(OUT, paste0("Forest_LU_30m_", YEAR, ".tif")))
+
+# Read-in national 1km raster and vector grid
+NCC_1KM_TIF <- rast("C:/Data/PRZ/GRID1KM/NCC_1KM_IDX.tif")
+NCC_1KM_SHP <- read_sf("C:/Data/PRZ/GRID1KM//NCC_1KM_IDX.shp")
+
+#------------------------------------------------------------------------------
 
 # Project national 1km vector grid to Lambert_Conformal_Conic_2SP
-NCC_1KM_IDX_LAMBERT <-  read_sf("C:/Data/Boundaries/NCC_1KM_IDX.shp") %>%
-  st_transform(crs = terra::crs(LU_TREED_30m)) %>%
-  st_make_valid()
+lambert_1km <-  NCC_1KM_SHP %>% st_transform(crs = terra::crs(FOREST_LC))
+
 # Calculate vector grid area
-NCC_1KM_IDX_LAMBERT$AREA_m2 <- st_area(NCC_1KM_IDX_LAMBERT) # ~95 ha cell area, each cell has slightly different area
+lambert_1km$Area_m2 <- st_area(lambert_1km) # ~95 ha cell area, each cell has slightly different area
 
 # Sum 30m treed pixels that intersect 1km national vector grid
-# LC ----
-NCC_1KM_IDX_LAMBERT$LC_TREE_COUNT <- exact_extract(LC_TREED_30m, NCC_1KM_IDX_LAMBERT, fun = "sum")
-# LU ----
-NCC_1KM_IDX_LAMBERT$LU_TREE_COUNT <- exact_extract(LU_TREED_30m, NCC_1KM_IDX_LAMBERT, fun = "sum")
+# 30m values are all 1, therefore sum is also getting the pixel count
+# LC 
+lambert_1km$LC_sum <- exact_extract(FOREST_LC, lambert_1km, fun = "sum") 
+# LU 
+# lambert_1km$LU_sum <- exact_extract(FOREST_LU, lambert_1km, fun = "sum")
 
 # Convert 30m tree pixel sum to proportion
-# LC ----
-NCC_1KM_IDX_ALBERS_LC_TREED <-  NCC_1KM_IDX_LAMBERT %>%
-  filter(LC_TREE_COUNT > 0) %>%
-  mutate(LC_TREE_m2 = LC_TREE_COUNT * 900) %>%
-  mutate(LC_TREE_PCT = as.numeric(round(((LC_TREE_m2 / AREA_m2) * 100),1))) %>%
-  mutate(LC_TREE_PCT = if_else(LC_TREE_PCT > 100, 100, LC_TREE_PCT)) %>%
-  st_transform(crs = st_crs(NCC_1KM_GRID)) # back to Canada_Albers_WGS_1984
+# LC 
+lc_albers <-  lambert_1km %>%
+  filter(LC_sum > 0) %>%
+  mutate(LC_m2 = LC_sum * 900) %>% # convert pixel count to area (30m x 30m = 900m2)
+  mutate(LC_pct = as.numeric(round(((LC_m2 / Area_m2) * 100),1))) %>% # pixel area / Lambert_Conformal_Conic_2SP cell area
+  mutate(LC_pct = if_else(LC_pct > 100, 100, LC_pct)) %>% # truncate
+  st_transform(crs = st_crs(NCC_1KM_TIF)) # back to Canada_Albers_WGS_1984
 
-# LU ----
-NCC_1KM_IDX_ALBERS_LU_TREED <-  NCC_1KM_IDX_LAMBERT %>%
-  filter(LU_TREE_COUNT > 0) %>%
-  mutate(LU_TREE_m2 = LU_TREE_COUNT * 900) %>%
-  mutate(LU_TREE_PCT = as.numeric(round(((LU_TREE_m2 / AREA_m2) * 100),1))) %>%
-  mutate(LU_TREE_PCT = if_else(LU_TREE_PCT > 100, 100, LU_TREE_PCT)) %>%
-  st_transform(crs = st_crs(NCC_1KM_GRID)) # back to Canada_Albers_WGS_1984
+# LU 
+# lu_albers <- lambert_1km %>%
+#   filter(LU_sum > 0) %>%
+#   mutate(LU_m2 = LU_sum * 900) %>% # convert pixel count to area (30m x 30m = 900m2)
+#   mutate(LU_pct = as.numeric(round(((LU_m2 / Area_m2) * 100),1))) %>% # pixel area / Lambert_Conformal_Conic_2SP cell area
+#   mutate(LU_pct = if_else(LU_pct > 100, 100, LU_pct)) %>% # truncate
+#   st_transform(crs = st_crs(NCC_1KM_TIF)) # back to Canada_Albers_WGS_1984
 
 # Polygon to Raster
-# LC ----
-LC_FOREST_1KM <- fasterize(NCC_1KM_IDX_ALBERS_LC_TREED, NCC_1KM_GRID, field = "LC_TREE_PCT") 
-writeRaster(rast(LC_FOREST_1KM), LC_OUTPUT, overwrite = TRUE, datatype="FLT4S")
+# LC 
+rasterize(
+  x = vect(lc_albers), 
+  y = NCC_1KM_TIF, 
+  field = "LC_pct",
+  filename = file.path(OUT, paste0("Forest_LC_1km_", YEAR, ".tif"))
+)
 
-# LU ----
-LU_FOREST_1KM <- fasterize(NCC_1KM_IDX_ALBERS_LU_TREED, NCC_1KM_GRID, field = "LU_TREE_PCT") 
-writeRaster(rast(LU_FOREST_1KM), LU_OUTPUT, overwrite = TRUE, datatype="FLT4S")
+# # LU 
+# rasterize(
+#   x = vect(lu_albers), 
+#   y = NCC_1KM_TIF, 
+#   field = "LC_pct",
+#   filename = file.path(OUT, paste0("Forest_LU_1km_", YEAR, ".tif"))
+# )
 
 ## End timer
 end_time <- Sys.time()
