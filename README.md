@@ -3,8 +3,8 @@ This repo contains the workflow for constructing forest habitat metric at a 30m 
 
 ### Sources
 NFIS covers treed pixels in forest dominated ecosystems. AAFC covers the agricultural south.
-- [NFIS](https://opendata.nfis.org/mapserver/nfis-change_eng.html) VLCE2 Land Cover (latest update, **2022**)
-- [AAFC LUTS](https://open.canada.ca/data/en/dataset/7a098ea9-cc31-4d79-b326-89f6cd1fbb7d) Land Use (latest update, **2020**)
+- [NFIS](https://opendata.nfis.org/mapserver/nfis-change_eng.html) VLCE2 Land Cover (circa **2022** conditions)
+- [AAFC LUTS](https://open.canada.ca/data/en/dataset/7a098ea9-cc31-4d79-b326-89f6cd1fbb7d) Land Use (circa, **2020** conditions)
 
 ![extent](https://github.com/NCC-CNC/forest-rollup/blob/main/product_extent_figure.jpg) 
 
